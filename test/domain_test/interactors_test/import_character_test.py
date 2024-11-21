@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import AsyncMock, patch, MagicMock
-from domain.interactors.import_character import import_character_data
+from domain.interactors.character_interactor import import_character
 from domain.entities.character import Character
 from lxml import etree
 
@@ -21,7 +21,7 @@ class TestImportCharacterData(unittest.IsolatedAsyncioTestCase):
         mock_get_rendered_html.return_value = self.mock_html_content
 
         # Act
-        character = await import_character_data(url, user_id, guild_id)
+        character = await import_character(url, user_id, guild_id)
 
         # Assert
         mock_get_rendered_html.assert_called_once_with(url)

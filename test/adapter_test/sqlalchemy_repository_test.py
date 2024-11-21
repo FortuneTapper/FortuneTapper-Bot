@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from sqlalchemy.orm import sessionmaker
-from adapter.gateways.sqlalchemy_repository import SQLAlchemyCharacterRepository
-from adapter.gateways.models.sqlalchemy_character import SQLAlchemyCharacter
+from adapter.gateways.character_repository.sqlalchemy_character_repository import SQLAlchemyCharacterRepository
+from adapter.gateways.character_repository.sqlalchemy_character import SQLAlchemyCharacter
 from domain.entities.character import Character
 
 
@@ -22,7 +22,7 @@ class TestSQLAlchemyCharacterRepository(unittest.TestCase):
             attributes={"strength": 10, "dexterity": 12}
         )
 
-    @patch("adapter.gateways.sqlalchemy_repository.SQLAlchemyCharacter")
+    @patch("adapter.gateways.character_repository.sqlalchemy_character_repository.SQLAlchemyCharacter")
     def test_save(self, mock_sqlalchemy_character):
         # Arrange
         self.mock_session.query.return_value.filter_by.return_value.update.return_value = None
@@ -35,9 +35,9 @@ class TestSQLAlchemyCharacterRepository(unittest.TestCase):
         # Assert
         self.mock_session.query.assert_called_with(mock_sqlalchemy_character)
         self.mock_session.query.return_value.filter_by.assert_called_with(
-            user_id="user123", guild_id="guild123", is_primary=True
+            user_id="user123", guild_id="guild123", character_id='12345'
         )
-        self.mock_session.add.assert_called_once()
+        self.mock_session.set.assert_called_once()
         mock_sqlalchemy_character.assert_called_with(
             user_id="user123",
             guild_id="guild123",
@@ -46,7 +46,7 @@ class TestSQLAlchemyCharacterRepository(unittest.TestCase):
             is_primary=True
         )
 
-    @patch("adapter.gateways.sqlalchemy_repository.SQLAlchemyCharacter")
+    @patch("adapter.gateways.character_repository.sqlalchemy_character_repository.SQLAlchemyCharacter")
     def test_get(self, mock_sqlalchemy_character):
         # Arrange
         mock_character_data = """{"character_id": "12345", "name": "Test Character", "attributes": {"strength": 10}}"""
@@ -66,7 +66,7 @@ class TestSQLAlchemyCharacterRepository(unittest.TestCase):
         self.assertEqual(result.character_id, "12345")
         self.assertEqual(result.name, "Test Character")
 
-    @patch("adapter.gateways.sqlalchemy_repository.SQLAlchemyCharacter")
+    @patch("adapter.gateways.character_repository.sqlalchemy_character_repository.SQLAlchemyCharacter")
     def test_get_all(self, mock_sqlalchemy_character):
         # Arrange
         mock_character_data = [
@@ -89,7 +89,7 @@ class TestSQLAlchemyCharacterRepository(unittest.TestCase):
         self.assertEqual(result[0].character_id, "12345")
         self.assertEqual(result[1].character_id, "67890")
 
-    @patch("adapter.gateways.sqlalchemy_repository.SQLAlchemyCharacter")
+    @patch("adapter.gateways.character_repository.sqlalchemy_character_repository.SQLAlchemyCharacter")
     def test_set_primary(self, mock_sqlalchemy_character):
         # Arrange
         self.mock_session.query.return_value.filter_by.return_value.update.return_value = None

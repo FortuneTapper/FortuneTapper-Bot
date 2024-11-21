@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from adapter.gateways.redis_character_repository import RedisCharacterRepository
+from adapter.gateways.character_repository.redis_character_repository import RedisCharacterRepository
 from domain.entities.character import Character
 
 

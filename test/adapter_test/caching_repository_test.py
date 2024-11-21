@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
-from adapter.gateways.caching_character_repository import CachingCharacterRepository
+from adapter.gateways.character_repository.caching_character_repository import CachingCharacterRepository
 from domain.entities.character import Character
 
 

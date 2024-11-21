@@ -1,9 +1,9 @@
 from typing import List, Optional
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from adapter.gateways.models.sqlalchemy_character import SQLAlchemyCharacter, Base
+from adapter.gateways.character_repository.sqlalchemy_character import SQLAlchemyCharacter, Base
 from domain.entities.character import Character
-from adapter.gateways.character_repository import CharacterRepository
+from adapter.gateways.character_repository.character_repository import CharacterRepository
 from contextlib import contextmanager
 
 class SQLAlchemyCharacterRepository(CharacterRepository):
@@ -26,20 +26,25 @@ class SQLAlchemyCharacterRepository(CharacterRepository):
 
     def save(self, user_id: str, guild_id: str, character: Character):
         with self.session_scope() as session:
-            session.query(SQLAlchemyCharacter).filter_by(
-                user_id=user_id, guild_id=guild_id, is_primary=True
-            ).update({"is_primary": False})
+            num = session.query(SQLAlchemyCharacter).filter_by(
+                user_id=user_id, guild_id=guild_id, character_id=character.character_id
+            ).update({"character_data":character.to_json()})
 
-            new_character = SQLAlchemyCharacter(
-                user_id=user_id,
-                guild_id=guild_id,
-                character_id=character.character_id,
-                character_data=character.to_json(),
-                is_primary=True
-            )
-            session.add(new_character)
+            if num == 0:
+                session.query(SQLAlchemyCharacter).filter_by(
+                    user_id=user_id, guild_id=guild_id, is_primary=True
+                ).update({"is_primary": False})
 
-    def set_primary(self, user_id: str, guild_id: str, character_id: str):
+                new_character = SQLAlchemyCharacter(
+                    user_id=user_id,
+                    guild_id=guild_id,
+                    character_id=character.character_id,
+                    character_data=character.to_json(),
+                    is_primary=True
+                )
+                session.add(new_character)
+
+    def set_primary(self, user_id: str, guild_id: str, character_id: str) -> Optional[Character]:
         with self.session_scope() as session:
             session.query(SQLAlchemyCharacter).filter_by(
                 user_id=user_id, guild_id=guild_id, is_primary=True
@@ -51,10 +56,21 @@ class SQLAlchemyCharacterRepository(CharacterRepository):
                 character_id=character_id
             ).update({"is_primary": True})
 
+            return self.get_by_id(user_id, guild_id, character_id)
+
     def get(self, user_id: str, guild_id: str) -> Optional[Character]:
         with self.session_scope() as session:
             result = session.query(SQLAlchemyCharacter).filter_by(
                 user_id=user_id, guild_id=guild_id, is_primary=True
+            ).first()
+            if result:
+                return Character.from_json(result.character_data) 
+            return None
+        
+    def get_by_id(self, user_id: str, guild_id: str, character_id: str) -> Optional[Character]:
+        with self.session_scope() as session:
+            result = session.query(SQLAlchemyCharacter).filter_by(
+                user_id=user_id, guild_id=guild_id, character_id=character_id
             ).first()
             if result:
                 return Character.from_json(result.character_data) 

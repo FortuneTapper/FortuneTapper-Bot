@@ -1,36 +1,57 @@
+from typing import Any
 import discord
+from discord.ext import commands
 from discord import app_commands
 from domain.entities.character import Character
-from domain.interactors import roll_interactor
-from presenters.roll_presenter import RollPresenter
+from domain.entities.roll_result import AdvantageType
+from domain.interactors import roll_interactor, character_interactor
+from adapter.presenters.roll_presenter import RollPresenter
 import adapter.config as config
+from domain.interactors.exceptions import NoCharacterError
 
-class TapCommand(discord.ext.commands.Cog):
+class TapCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+    
 
     @app_commands.command(
         name="roll", 
-        description="Realiza una tirada de dados."
+        description="Make a generic roll"
     )
     @app_commands.describe(
-        dice="El formato de dados, como 1d20 o 2d6"
+        dice="Dice expression format, like 1d20 or 2d6"
     )
     async def roll(self, interaction: discord.Interaction, dice: str):
-        await RollPresenter(interaction).roll(roll_interactor.roll(dice))
+        config.logger.info({
+            'event': 'roll',
+            'user': str(interaction.user),
+            'user_id': interaction.user.id,
+            'guild': interaction.guild.name if interaction.guild else "DM",
+            'guild_id': interaction.guild.id if interaction.guild else None,
+            'channel': interaction.channel.name if interaction.channel else "Unknown",
+            'channel_id': interaction.channel.id if interaction.channel else None,
+            'dice': dice
+        })
 
-    @app_commands.command(
-        name="plot", 
-        description="Makes a plot dice roll"
-    )
-    async def plot(self, interaction: discord.Interaction):
-        await RollPresenter(interaction).roll(roll_interactor.plot_roll(), title = "Plot dice roll!")
+        try:
+            await interaction.response.defer()
 
-    @app_commands.command(name="tap", description="Realiza una tirada usando un atributo o habilidad.")
+            await RollPresenter(interaction).roll(roll_interactor.roll(dice))
+        except NoCharacterError as e:
+            config.logger.error(f"NoCharacterError: {e}", exc_info=True)
+            await interaction.followup.send(str(e), ephemeral=True)
+        except Exception as e:
+            config.logger.error(f"Unexpected error: {e}", exc_info=True)
+            await interaction.followup.send("Unexpected error occurred.", ephemeral=True)
+        
+
+
+    @app_commands.command(name="tap", description="Makes a skill test roll")
     @app_commands.describe(
         stat="Which skill to use",
-        advantage="Advantage/Disadvantage",
-        plot="Whether to use plot dice or not"
+        advantage="Advantage/Disadvantage on skill test",
+        plot_die="Whether to use plot dice or not",
+        plot_advantage="Advantage/Disadvantage on plot die"
     )
     @app_commands.choices(
         stat=[
@@ -54,35 +75,132 @@ class TapCommand(discord.ext.commands.Cog):
             app_commands.Choice(name="Survival", value="survival"),
         ],
         advantage = [
-            app_commands.Choice(name="Advantage", value="adv"),
-            app_commands.Choice(name="Disadvantage", value="dis"),
+            app_commands.Choice(name="Advantage", value=roll_interactor.AdvantageType.ADVANTAGE.value),
+            app_commands.Choice(name="Disadvantage", value=roll_interactor.AdvantageType.DISADVANTAGE.value),
+        ],
+        plot_advantage = [
+            app_commands.Choice(name="Advantage", value=roll_interactor.AdvantageType.ADVANTAGE.value),
+            app_commands.Choice(name="Disadvantage", value=roll_interactor.AdvantageType.DISADVANTAGE.value),
         ]
     )
-    async def tap(self, interaction: discord.Interaction, stat: app_commands.Choice[str], advantage: str = None, plot: bool = False):
-        """Realiza una tirada de dados usando un atributo o habilidad del personaje activo."""
+    async def tap(
+        self, 
+        interaction: discord.Interaction, 
+        stat: app_commands.Choice[str], 
+        advantage: str = roll_interactor.AdvantageType.NONE.value, 
+        plot_die: bool = False, 
+        plot_advantage: str = roll_interactor.AdvantageType.NONE.value
+    ):
+        config.logger.info({
+            'event': 'tap',
+            'user': str(interaction.user),
+            'user_id': interaction.user.id,
+            'guild': interaction.guild.name if interaction.guild else "DM",
+            'guild_id': interaction.guild.id if interaction.guild else None,
+            'channel': interaction.channel.name if interaction.channel else "Unknown",
+            'channel_id': interaction.channel.id if interaction.channel else None,
+        })
 
         try:
-            # Obtener el personaje activo del usuario en el servidor actual
-            character = config.repository.get(str(interaction.user.id), str(interaction.guild.id))
+            await interaction.response.defer()
 
-            if character:
-                await RollPresenter(interaction).roll(roll_interactor.roll(f"{(
-                    '2d20kl1' if advantage == 'dis'
-                    else '2d20kh1' if advantage == 'adv'
-                    else '1d20'
-                )}+{character.skills.__dict__[stat.value].modifier}"), title = f"Tapping {stat.name} 🎲")
-            else:
-                await interaction.response.send_message(
-                    "No tienes un personaje activo en este servidor.",
-                    ephemeral=True
-                )
-
-        except Exception as e:
-            await interaction.response.send_message(
-                "Ha ocurrido un error inesperado. Inténtalo de nuevo más tarde.",
-                ephemeral=True
+            await RollPresenter(interaction).skill_test(
+                roll_interactor.skill_test(
+                    modifier = character_interactor.get_character(
+                        str(interaction.user.id), 
+                        str(interaction.guild.id)
+                    ).skills.__dict__[stat.value].modifier,
+                    advantage = AdvantageType(advantage),
+                    plot_die = plot_die,
+                    plot_advantage = AdvantageType(plot_advantage)
+                ), 
+                skill = stat.name
             )
-            print(f"Error inesperado: {e}")
+        except NoCharacterError as e:
+            config.logger.error(f"NoCharacterError: {e}", exc_info=True)
+            await interaction.followup.send(str(e), ephemeral=True)
+        except Exception as e:
+            config.logger.error(f"Unexpected error: {e}", exc_info=True)
+            await interaction.followup.send("Unexpected error occurred.", ephemeral=True)
+        
+
+    @app_commands.command(name="attack", description="Makes an attack roll")
+    @app_commands.describe(
+        damage_dice = "Dice to roll damage", 
+        weapon_type = "What type of weapon to use: heavy, light or unarmed",
+        advantage = "If to give advantage/disadvantage to the hit roll",
+        damage_advantage = "If to give advantage/disadvantage to the damage roll",
+        plot_die = "If to use plot die",
+        plot_advantage = "If to have advantage/disadvantage in the plot die roll",
+        plot_die_attack = "If to apply plot to hit roll",
+        weapon_name = "Name of the weapon to use"
+    )
+    @app_commands.choices(
+        weapon_type = [
+            app_commands.Choice(name="Heavy Weapon", value="heavy_weapons"),
+            app_commands.Choice(name="Light Weapon", value="light_weapons"),
+            app_commands.Choice(name="Unarmed", value="athletics"),
+        ],
+        advantage = [
+            app_commands.Choice(name="Advantage", value=roll_interactor.AdvantageType.ADVANTAGE.value),
+            app_commands.Choice(name="Disadvantage", value=roll_interactor.AdvantageType.DISADVANTAGE.value),
+        ],
+        damage_advantage = [
+            app_commands.Choice(name="Advantage", value=roll_interactor.AdvantageType.ADVANTAGE.value),
+            app_commands.Choice(name="Disadvantage", value=roll_interactor.AdvantageType.DISADVANTAGE.value),
+        ],
+        plot_advantage = [
+            app_commands.Choice(name="Advantage", value=roll_interactor.AdvantageType.ADVANTAGE.value),
+            app_commands.Choice(name="Disadvantage", value=roll_interactor.AdvantageType.DISADVANTAGE.value),
+        ]
+    )
+    async def attack(
+        self, 
+        interaction: discord.Interaction, 
+        damage_dice: str, 
+        weapon_type: app_commands.Choice[str],
+        advantage: str = roll_interactor.AdvantageType.NONE.value, 
+        damage_advantage: str =  roll_interactor.AdvantageType.NONE.value,
+        plot_die: bool = False, 
+        plot_advantage: str = roll_interactor.AdvantageType.NONE.value,
+        plot_die_attack: bool = True,
+        weapon_name: str = 'Unknown'
+    ):
+        config.logger.info({
+            'event': 'tap',
+            'user': str(interaction.user),
+            'user_id': interaction.user.id,
+            'guild': interaction.guild.name if interaction.guild else "DM",
+            'guild_id': interaction.guild.id if interaction.guild else None,
+            'channel': interaction.channel.name if interaction.channel else "Unknown",
+            'channel_id': interaction.channel.id if interaction.channel else None,
+        })
+
+        try:
+            await interaction.response.defer()
+
+            await RollPresenter(interaction).attack(
+                roll_interactor.attack_roll(
+                    damage_expr = damage_dice,
+                    modifier = character_interactor.get_character(
+                        str(interaction.user.id), 
+                        str(interaction.guild.id)
+                    ).skills.__dict__[weapon_type.value].modifier if weapon_type else 0,
+                    advantage = AdvantageType(advantage),
+                    damage_advantage = AdvantageType(damage_advantage),
+                    plot_die = plot_die,
+                    plot_advantage = AdvantageType(plot_advantage),
+                    plot_die_attack = plot_die_attack
+                ), 
+                weapon = weapon_name
+            )
+        except NoCharacterError as e:
+            config.logger.error(f"NoCharacterError: {e}", exc_info=True)
+            await interaction.followup.send(str(e), ephemeral=True)
+        except Exception as e:
+            config.logger.error(f"Unexpected error: {e}", exc_info=True)
+            await interaction.followup.send("Unexpected error occurred.", ephemeral=True)
+    
 
 
 async def setup(bot):

@@ -12,7 +12,7 @@ async def on_ready():
     cfg.logger.info(f"{bot.user} is ready and commands are sync.")
 
 async def load_extensions():
-    #await bot.load_extension("cogs.tap_cog")
+    await bot.load_extension("adapter.cogs.tap_cog")
     await bot.load_extension("adapter.cogs.character_cog")
     pass
 

@@ -9,7 +9,15 @@ class CharacterRepository(ABC):
         pass
 
     @abstractmethod
+    def set_primary(self, user_id: str, guild_id: str, character_id: str) -> Optional[Character]:
+        pass
+
+    @abstractmethod
     def get(self, user_id: str, guild_id: str) -> Optional[Character]:
+        pass
+    
+    @abstractmethod
+    def get_by_id(self, user_id: str, guild_id: str, character_id: str) -> Optional[Character]:
         pass
 
     @abstractmethod
