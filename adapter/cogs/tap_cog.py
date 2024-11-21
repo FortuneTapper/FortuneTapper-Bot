@@ -132,7 +132,7 @@ class TapCommand(commands.Cog):
         damage_advantage = "If to give advantage/disadvantage to the damage roll",
         plot_die = "If to use plot die",
         plot_advantage = "If to have advantage/disadvantage in the plot die roll",
-        plot_die_attack = "If to apply plot to hit roll",
+        plot_die_damage = "If to apply plot to damage roll",
         weapon_name = "Name of the weapon to use"
     )
     @app_commands.choices(
@@ -163,7 +163,7 @@ class TapCommand(commands.Cog):
         damage_advantage: str =  roll_interactor.AdvantageType.NONE.value,
         plot_die: bool = False, 
         plot_advantage: str = roll_interactor.AdvantageType.NONE.value,
-        plot_die_attack: bool = True,
+        plot_die_damage: bool = False,
         weapon_name: str = 'Unknown'
     ):
         config.logger.info({
@@ -190,7 +190,7 @@ class TapCommand(commands.Cog):
                     damage_advantage = AdvantageType(damage_advantage),
                     plot_die = plot_die,
                     plot_advantage = AdvantageType(plot_advantage),
-                    plot_die_attack = plot_die_attack
+                    plot_die_damage = plot_die_damage
                 ), 
                 weapon = weapon_name
             )

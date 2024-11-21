@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 from sqlalchemy.orm import sessionmaker
 from adapter.gateways.character_repository.sqlalchemy_character_repository import SQLAlchemyCharacterRepository
 from adapter.gateways.character_repository.sqlalchemy_character import SQLAlchemyCharacter
@@ -11,11 +11,9 @@ class TestSQLAlchemyCharacterRepository(unittest.TestCase):
         self.db_url = "sqlite:///:memory:"
         self.repository = SQLAlchemyCharacterRepository(self.db_url)
 
-        # Mocking the session
         self.mock_session = MagicMock()
         self.repository.Session = MagicMock(return_value=self.mock_session)
 
-        # Example Character
         self.character = Character(
             character_id="12345",
             name="Test Character",
@@ -24,20 +22,25 @@ class TestSQLAlchemyCharacterRepository(unittest.TestCase):
 
     @patch("adapter.gateways.character_repository.sqlalchemy_character_repository.SQLAlchemyCharacter")
     def test_save(self, mock_sqlalchemy_character):
-        # Arrange
-        self.mock_session.query.return_value.filter_by.return_value.update.return_value = None
+        self.mock_session.query.return_value.filter_by.return_value.update.return_value = 0
         self.mock_session.add.return_value = None
 
-        # Act
-        with self.repository.session_scope() as session:
+        with self.repository.session_scope():
             self.repository.save("user123", "guild123", self.character)
 
-        # Assert
         self.mock_session.query.assert_called_with(mock_sqlalchemy_character)
-        self.mock_session.query.return_value.filter_by.assert_called_with(
-            user_id="user123", guild_id="guild123", character_id='12345'
-        )
-        self.mock_session.set.assert_called_once()
+
+        filter_by_calls = [
+            call(user_id="user123", guild_id="guild123", character_id="12345"),
+            call(user_id="user123", guild_id="guild123", is_primary=True)
+        ]
+        actual_filter_by_calls = [
+            mock_call for mock_call in self.mock_session.query.return_value.filter_by.mock_calls
+            if mock_call[0] == ''  # Ignorar llamadas a métodos encadenados como `update`
+        ]
+        self.assertEqual(filter_by_calls, actual_filter_by_calls)
+
+        self.mock_session.add.assert_called_once()
         mock_sqlalchemy_character.assert_called_with(
             user_id="user123",
             guild_id="guild123",
@@ -91,14 +94,13 @@ class TestSQLAlchemyCharacterRepository(unittest.TestCase):
 
     @patch("adapter.gateways.character_repository.sqlalchemy_character_repository.SQLAlchemyCharacter")
     def test_set_primary(self, mock_sqlalchemy_character):
-        # Arrange
         self.mock_session.query.return_value.filter_by.return_value.update.return_value = None
+        self.repository.get_by_id = MagicMock(return_value="Mocked Character")
 
-        # Act
-        with self.repository.session_scope() as session:
-            self.repository.set_primary("user123", "guild123", "12345")
+        with self.repository.session_scope():
+            result = self.repository.set_primary("user123", "guild123", "12345")
 
-        # Assert
+        self.assertEqual(result, "Mocked Character")
         self.mock_session.query.assert_called_with(mock_sqlalchemy_character)
         self.mock_session.query.return_value.filter_by.assert_any_call(
             user_id="user123", guild_id="guild123", is_primary=True
@@ -106,6 +108,8 @@ class TestSQLAlchemyCharacterRepository(unittest.TestCase):
         self.mock_session.query.return_value.filter_by.assert_any_call(
             user_id="user123", guild_id="guild123", character_id="12345"
         )
+        self.mock_session.query.return_value.filter_by.return_value.update.assert_any_call({"is_primary": False})
+        self.mock_session.query.return_value.filter_by.return_value.update.assert_any_call({"is_primary": True})
 
 
 if __name__ == "__main__":

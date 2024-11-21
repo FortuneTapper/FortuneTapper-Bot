@@ -64,7 +64,7 @@ def attack_roll(
         damage_advantage: AdvantageType = AdvantageType.NONE, 
         plot_die: bool = False, 
         plot_advantage: AdvantageType = AdvantageType.NONE,
-        plot_die_attack = True,
+        plot_die_damage = False,
 ) -> AttackResult:
     assert re.fullmatch(r'\d+d\d+', damage_expr) # Format XdY
     
@@ -72,7 +72,7 @@ def attack_roll(
     damage_expr_with_modifiers  = f'{expr_with_advantage(damage_expr, damage_advantage)}+{modifier}'
 
     plot_result = None
-    if (plot_die and not plot_die_attack):
+    if (plot_die and plot_die_damage):
         plot_result = plot_roll(advantage=plot_advantage)
         damage_expr_with_modifiers  = f'{damage_expr_with_modifiers}+{plot_result.plus}'
         addition = addition + plot_result.plus
@@ -80,7 +80,7 @@ def attack_roll(
     damage_result = d20.roll(damage_expr_with_modifiers)
 
     return AttackResult(
-        hit_result = skill_test(modifier=modifier, advantage=advantage, plot_die=plot_die and plot_die_attack, plot_advantage=plot_advantage),
+        hit_result = skill_test(modifier=modifier, advantage=advantage, plot_die=plot_die and not plot_die_damage, plot_advantage=plot_advantage),
         damage_result = DamageRollResult(
             roll_result = damage_result,
             graze = damage_result.total - addition,
