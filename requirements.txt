@@ -1,0 +1,10 @@
+d20
+discord.py
+python-dotenv
+lxml
+pytest
+playwright
+redis
+psycopg2-binary
+sqlalchemy
+dataclasses-json
