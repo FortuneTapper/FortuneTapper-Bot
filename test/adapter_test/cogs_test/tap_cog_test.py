@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
-from adapter.cogs.tap_cog import TapCommand, config
+from adapter.cogs.tap_cog import TapCommand
 from domain.entities.roll_result import AdvantageType
 from discord import app_commands
 

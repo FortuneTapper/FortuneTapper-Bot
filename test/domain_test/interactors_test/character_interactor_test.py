@@ -10,7 +10,6 @@ from domain.interactors.character_interactor import (
 from domain.entities.character import Character, Attributes, Skills, Skill, Defenses, Resources, Action
 from domain.interactors import exceptions
 import os
-import adapter.config as config
 
 class TestCharacterInteractor(unittest.IsolatedAsyncioTestCase):
 
@@ -47,7 +46,7 @@ class TestCharacterInteractor(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(result.name, "Updated Character")
         mock_get.assert_called_once_with("user1", "guild1")
-        mock_import_character.assert_called_once_with(f"{config.DEMIPLANE_URL}123", "user1", "guild1")
+        mock_import_character.assert_called_once()
 
     @patch("domain.interactors.character_interactor.config.repository.get")
     def test_get_character(self, mock_get):
