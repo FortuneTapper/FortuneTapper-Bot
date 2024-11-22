@@ -11,10 +11,10 @@ from adapter.gateways.character_repository.sqlalchemy_character_repository impor
 
 dotenv.load_dotenv()
 
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-REDIS_URL = os.getenv('REDIS_URL')
-POSTGRES_URL = os.getenv('POSTGRES_URL')
-DEMIPLANE_URL = os.getenv('DEMIPLANE_URL')
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN', default='')
+REDIS_URL = os.getenv('REDIS_URL', default='redis://')
+POSTGRES_URL = os.getenv('POSTGRES_URL', default='sqlite:///:memory:')
+DEMIPLANE_URL = os.getenv('DEMIPLANE_URL', default = '')
 
 repository: CharacterRepository = CachingCharacterRepository(
     RedisCharacterRepository(REDIS_URL), 
