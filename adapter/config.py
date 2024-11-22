@@ -14,7 +14,7 @@ dotenv.load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN', default='')
 REDIS_URL = os.getenv('REDIS_URL', default='redis://')
 POSTGRES_URL = os.getenv('POSTGRES_URL', default='sqlite:///:memory:')
-DEMIPLANE_URL = os.getenv('DEMIPLANE_URL', default = '')
+DEMIPLANE_URL = os.getenv('DEMIPLANE_URL', default = 'https://app.demiplane.com/nexus/cosmererpg/character-sheet/')
 
 repository: CharacterRepository = CachingCharacterRepository(
     RedisCharacterRepository(REDIS_URL), 
@@ -22,7 +22,7 @@ repository: CharacterRepository = CachingCharacterRepository(
 )
 
 logging.basicConfig(
-    level=os.getenv('LOG_LEVEL'),  # Nivel de log (puedes cambiar a DEBUG, WARNING, etc.)
+    level=os.getenv('LOG_LEVEL', default='INFO'),  # Nivel de log (puedes cambiar a DEBUG, WARNING, etc.)
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger: logging.Logger = logging.getLogger(__name__)
