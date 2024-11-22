@@ -5,7 +5,7 @@ from discord.ext import commands
 from discord import app_commands
 from adapter.presenters.character_presenter import CharacterPresenter
 from domain.interactors import character_interactor
-import adapter.config as config
+from adapter import config as config
 from domain.interactors.exceptions import NoCharacterError, CharacterImportError
 
 class Character(commands.Cog):

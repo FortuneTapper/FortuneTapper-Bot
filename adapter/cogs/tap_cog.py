@@ -6,7 +6,7 @@ from domain.entities.character import Character
 from domain.entities.roll_result import AdvantageType
 from domain.interactors import roll_interactor, character_interactor
 from adapter.presenters.roll_presenter import RollPresenter
-import adapter.config as config
+from adapter import config as config
 from domain.interactors.exceptions import NoCharacterError
 
 class TapCommand(commands.Cog):

@@ -13,6 +13,25 @@ import os
 
 class TestCharacterInteractor(unittest.IsolatedAsyncioTestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        # Inicia el patch una vez para toda la clase
+        cls.patcher = patch('adapter.config')
+        cls.mock_config = cls.patcher.start()
+
+        # Configura los valores mockeados que necesites
+        cls.mock_config.repository = MagicMock()
+        cls.mock_config.logger = MagicMock()
+        cls.mock_config.DISCORD_TOKEN = 'mock_discord_token'
+        cls.mock_config.REDIS_URL = 'mock_redis_url'
+        cls.mock_config.POSTGRES_URL = 'mock_postgres_url'
+        cls.mock_config.DEMIPLANE_URL = 'mock_demiplane_url'
+
+    @classmethod
+    def tearDownClass(cls):
+        # Detiene el patch una vez al final de la clase
+        cls.patcher.stop()
+
     @patch("domain.interactors.character_interactor.config.repository.save")
     @patch("domain.interactors.character_interactor.async_playwright")
     async def test_import_character_from_html(self, mock_playwright, mock_save):

@@ -1,7 +1,6 @@
 import discord
 import d20
-from domain.entities.roll_result import SkillTestResult, PlotDieResult, AttackResult, PlotDieResultType
-import adapter.config as config
+from domain.entities.roll_result import SkillTestResult, AttackResult, PlotDieResultType
 
 class RollPresenter:
     interaction: discord.Interaction

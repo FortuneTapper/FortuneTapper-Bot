@@ -5,6 +5,25 @@ from domain.entities.roll_result import AdvantageType
 from discord import app_commands
 
 class TestTapCommand(unittest.IsolatedAsyncioTestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Inicia el patch una vez para toda la clase
+        cls.patcher = patch('adapter.config')
+        cls.mock_config = cls.patcher.start()
+
+        # Configura los valores mockeados que necesites
+        cls.mock_config.repository = MagicMock()
+        cls.mock_config.logger = MagicMock()
+        cls.mock_config.DISCORD_TOKEN = 'mock_discord_token'
+        cls.mock_config.REDIS_URL = 'mock_redis_url'
+        cls.mock_config.POSTGRES_URL = 'mock_postgres_url'
+        cls.mock_config.DEMIPLANE_URL = 'mock_demiplane_url'
+
+    @classmethod
+    def tearDownClass(cls):
+        # Detiene el patch una vez al final de la clase
+        cls.patcher.stop()
+
     async def asyncSetUp(self):
         self.bot = MagicMock()  # Simula el bot de Discord
         self.cog = TapCommand(self.bot)  # Instancia la clase con el bot simulado

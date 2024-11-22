@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import asyncio
-import adapter.config as cfg
+from adapter import config
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="/", intents=intents)
@@ -9,7 +9,7 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 @bot.event
 async def on_ready():
     await bot.tree.sync()
-    cfg.logger.info(f"{bot.user} is ready and commands are sync.")
+    config.logger.info(f"{bot.user} is ready and commands are sync.")
 
 async def load_extensions():
     await bot.load_extension("adapter.cogs.tap_cog")
@@ -18,7 +18,7 @@ async def load_extensions():
 
 async def main():
     await load_extensions()
-    await bot.start(cfg.DISCORD_TOKEN)
+    await bot.start(config.DISCORD_TOKEN)
 
 
 asyncio.run(main())
