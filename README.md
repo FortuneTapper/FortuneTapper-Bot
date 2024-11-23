@@ -4,38 +4,44 @@ FortuneTapper is a Discord Bot designed to allow playing Cosmere RPG games throu
 
 ## 🚀 Features
 
-- Character import
-- Dice rolling
-- Skill tests and attack actions
+- [x] Character import
+- [x] Dice rolling
+- [x] Skill tests and attack actions
+- [ ] Health/Focus/Investiture management
+- [ ] Performing actions
+- [ ] Combat tracking
+- [ ] Map management with [On The Fly Battle Maps](https://github.com/otfbm)
 
-## 🛠️ Installation
-
-#### 0. Prerequisites
-
-Before installing and running the project, make sure you have the following components set up:
+## 📋 Requirements
 
 - Python 3.9 or higher: Required to run the bot.
 - Redis Cache: An instance of Redis for caching.
 - JSON-compatible Database: A database that supports JSON column types, such as PostgreSQL (version 9.4 or higher).
-- Discord Token: Needed to connect the bot to your Discord server (you can follow the [official tutorial](https://discord.com/developers/docs/quick-start/getting-started))
+- Discord Token: you can follow these steps:
+  1. Go to the [Discord Developer Portal](https://discord.com/developers)
+  2. Create a new application.
+  3. Go to the "Bot" tab and add a bot to your application.
+  4. Copy the bot token and paste it into the .env file.
 
-#### 1. Clone the repository
+## 🛠️ Installation
+
+1. Clone the repository
 ```
 git clone https://github.com/FortuneTapper/FortuneTapper-Bot.git
 ```
 
-#### 2. [Optional] Set up the virtual environment
+2. [Optional] Set up the virtual environment
 ```
 python -m venv venv
 source venv/bin/activate
 ```
 
-#### 3. Install dependencies
+3. Install dependencies
 ```
 pip install -r requirements.txt
 ```
 
-#### 4. Configure environment variables
+4. Configure environment variables
 Create a `.env` file and add the following:
 ```
 DISCORD_TOKEN=your_discord_token
@@ -45,17 +51,20 @@ DATABASE_URL=any_db_that_supports_json_data
 
 
 
+
+
 ## 🧑‍💻 Usage
 
 ### Running the Bot
 
-1. **Start the bot**:
+Start the bot:
 ```
 python bot.py
 ```
 
-2. **Available Commands**:
-## Available Commands
+### Available Commands
+
+More detailed info can be found [here](docs/commands.md).
 
 - **`/import <URL>`**: Imports a character from a Demiplane public URL.  
   Example: `/import https://demiplane.com/character/12345`
@@ -84,7 +93,7 @@ python bot.py
 
 ## 📚 Contribution
 
-Before contributing, please read the [wiki](https://github.com/FortuneTapper/FortuneTapper-Bot/wiki) and follow the development guidelines.
+Before contributing, please read the [developer guide](docs/developer_guide.md) and follow the guidelines.
 
 1. Fork the project.
 2. Create a branch for your feature (`git checkout -b feature/new-feature`).
