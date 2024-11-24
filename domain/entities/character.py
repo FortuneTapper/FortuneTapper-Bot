@@ -23,16 +23,23 @@ class Defenses:
     spiritual: int = 0
     deflect: int = 0
 
+class ResourceType(Enum):
+    HEALTH = "health"
+    FOCUS = "focus"
+    INVESTITURE = "investiture"
+
+@dataclass_json
+@dataclass
+class Resource:
+    max: int = 0
+    current: int = 0
 
 @dataclass_json
 @dataclass
 class Resources:
-    health: int = 0
-    health_max: int = 0
-    focus: int = 0
-    focus_max: int = 0
-    investiture: int = 0
-    investiture_max: int = 0
+    health: Resource = field(default_factory=Resource)
+    focus: Resource = field(default_factory=Resource)
+    investiture: Resource = field(default_factory=Resource)
     movement: int = 0
     recovery_die: int = 0
     senses_range: int = 0
