@@ -1,7 +1,7 @@
 from typing import List
 from lxml import etree
 from playwright.async_api import async_playwright
-from domain.entities.character import Character, Attributes, Skills, Skill, Defenses, Resources, Action, ActionCost, ActionType
+from domain.entities.character import Character, Attributes, Skills, Skill, Defenses, Resources, Resource, Action, ActionCost, ActionType
 from adapter import config
 from domain.interactors import exceptions
 
@@ -38,12 +38,18 @@ async def import_character(url, user_id, guild_id) -> Character:
                 deflect=int(tree.xpath("//div[contains(@class, 'deflect-value')]/text()")[0].strip())
             ),
             resources=Resources(
-                health=int(tree.xpath("//div[contains(@class, 'max-hit-point-indicator')]/text()")[0].strip()[1:]),
-                health_max=int(tree.xpath("//div[contains(@class, 'max-hit-point-indicator')]/text()")[0].strip()[1:]),
-                focus=int(tree.xpath("//div[contains(@class, 'resource-box-focus')]//div[contains(@class, 'resource-max') and contains(@class, 'text-block__text')]/text()")[0].strip()[1:]),
-                focus_max=int(tree.xpath("//div[contains(@class, 'resource-box-focus')]//div[contains(@class, 'resource-max') and contains(@class, 'text-block__text')]/text()")[0].strip()[1:]),
-                investiture=int(tree.xpath("//div[contains(@class, 'resource-box-investiture')]//div[contains(@class, 'resource-max') and contains(@class, 'text-block__text')]/text()")[0].strip()[1:]),
-                investiture_max=int(tree.xpath("//div[contains(@class, 'resource-box-investiture')]//div[contains(@class, 'resource-max') and contains(@class, 'text-block__text')]/text()")[0].strip()[1:]),
+                health = Resource(
+                    max = int(tree.xpath("//div[contains(@class, 'max-hit-point-indicator')]/text()")[0].strip()[1:]),
+                    current =int(tree.xpath("//div[contains(@class, 'max-hit-point-indicator')]/text()")[0].strip()[1:])
+                ),
+                focus = Resource(
+                    max = int(tree.xpath("//div[contains(@class, 'resource-box-focus')]//div[contains(@class, 'resource-max') and contains(@class, 'text-block__text')]/text()")[0].strip()[1:]),
+                    current = int(tree.xpath("//div[contains(@class, 'resource-box-focus')]//div[contains(@class, 'resource-max') and contains(@class, 'text-block__text')]/text()")[0].strip()[1:])
+                ),
+                investiture = Resource(
+                    max = int(tree.xpath("//div[contains(@class, 'resource-box-investiture')]//div[contains(@class, 'resource-max') and contains(@class, 'text-block__text')]/text()")[0].strip()[1:]),
+                    current =int(tree.xpath("//div[contains(@class, 'resource-box-investiture')]//div[contains(@class, 'resource-max') and contains(@class, 'text-block__text')]/text()")[0].strip()[1:])
+                ),
                 movement=int(tree.xpath("//div[contains(@class, 'statistic-box--movement')]//div[contains(@class, 'statistic-value') and contains(@class, 'text-block__text')]/text()")[0].strip().split(' ')[0]),
                 recovery_die=int(tree.xpath("//div[contains(@class, 'statistic-box--recovery-die')]//div[contains(@class, 'statistic-value') and contains(@class, 'text-block__text')]/text()")[0].strip()[1:]),
                 senses_range=int(tree.xpath("//div[contains(@class, 'statistic-box--senses-range')]//div[contains(@class, 'statistic-value') and contains(@class, 'text-block__text')]/text()")[0].strip().split(' ')[0])

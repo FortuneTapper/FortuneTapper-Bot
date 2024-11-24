@@ -39,9 +39,9 @@ class CharacterPresenter:
 
     def display_resources(self, character: Character) -> str:
         return (
-            f"**Health**: {character.resources.health}/{character.resources.health_max}\n"
-            f"**Focus**: {self.circle_display(character.resources.focus, character.resources.focus_max)}\n"
-            f"**Investiture**: {self.circle_display(character.resources.investiture, character.resources.investiture_max)}\n"
+            f"**Health**: {character.resources.health.current}/{character.resources.health.max}\n"
+            f"**Focus**: {self.circle_display(character.resources.focus.current, character.resources.focus.max)}\n"
+            f"**Investiture**: {self.circle_display(character.resources.investiture.current, character.resources.investiture.max)}\n"
             f"**Movement**: {character.resources.movement} ft.\n"
             f"**Recovery Die**: d{character.resources.recovery_die}\n"
             f"**Senses Range**: {character.resources.senses_range} ft."
