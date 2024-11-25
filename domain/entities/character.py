@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List
 from dataclasses_json import dataclass_json
-from enum import Enum
+from domain.entities.resource import Resources
+from domain.entities.skill import Skills
+from domain.entities.action import Action
 
 
 @dataclass_json
@@ -22,86 +24,6 @@ class Defenses:
     cognitive: int = 0
     spiritual: int = 0
     deflect: int = 0
-
-class ResourceType(Enum):
-    HEALTH = "health"
-    FOCUS = "focus"
-    INVESTITURE = "investiture"
-
-@dataclass_json
-@dataclass
-class Resource:
-    max: int = 0
-    current: int = 0
-
-@dataclass_json
-@dataclass
-class Resources:
-    health: Resource = field(default_factory=Resource)
-    focus: Resource = field(default_factory=Resource)
-    investiture: Resource = field(default_factory=Resource)
-    movement: int = 0
-    recovery_die: int = 0
-    senses_range: int = 0
-
-
-@dataclass_json
-@dataclass
-class Skill:
-    proficiency: int = 0
-    modifier: int = 0
-
-
-@dataclass_json
-@dataclass
-class Skills:
-    athletics: Skill = field(default_factory=Skill)
-    agility: Skill = field(default_factory=Skill)
-    heavy_weapons: Skill = field(default_factory=Skill)
-    light_weapons: Skill = field(default_factory=Skill)
-    stealth: Skill = field(default_factory=Skill)
-    thievery: Skill = field(default_factory=Skill)
-    crafting: Skill = field(default_factory=Skill)
-    deduction: Skill = field(default_factory=Skill)
-    discipline: Skill = field(default_factory=Skill)
-    intimidation: Skill = field(default_factory=Skill)
-    lore: Skill = field(default_factory=Skill)
-    medicine: Skill = field(default_factory=Skill)
-    deception: Skill = field(default_factory=Skill)
-    insight: Skill = field(default_factory=Skill)
-    leadership: Skill = field(default_factory=Skill)
-    perception: Skill = field(default_factory=Skill)
-    persuasion: Skill = field(default_factory=Skill)
-    survival: Skill = field(default_factory=Skill)
-
-
-class ActionCost(Enum):
-    REACTION = "r"
-    FREE = "0"
-    ACTION_1 = "1"
-    ACTION_2 = "2"
-    ACTION_3 = "3"
-    # REACTION = "↶"
-    # FREE = "▷"
-    # ACTION_1 = "▶"
-    # ACTION_2 = "▶▶"
-    # ACTION_3 = "▶▶▶"
-
-
-class ActionType(Enum):
-    BASIC = "Basic"
-    WEAPON = "Weapon"
-
-
-@dataclass_json
-@dataclass
-class Action:
-    name: str = "Unknown"
-    description: str = "Unknown"
-    type: Optional[ActionType] = None
-    cost: Optional[ActionCost] = None
-    focus: int = 0
-    investiture: int = 0
 
 
 @dataclass_json

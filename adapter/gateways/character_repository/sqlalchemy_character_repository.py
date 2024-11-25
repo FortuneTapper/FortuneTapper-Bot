@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from adapter.gateways.character_repository.sqlalchemy_character import SQLAlchemyCharacter, Base
-from domain.entities.character import Character
+from domain.entities import Character
 from adapter.gateways.character_repository.character_repository import CharacterRepository
 from contextlib import contextmanager
 

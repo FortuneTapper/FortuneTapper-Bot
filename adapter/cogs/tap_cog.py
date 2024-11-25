@@ -2,16 +2,17 @@ from typing import Any
 import discord
 from discord.ext import commands
 from discord import app_commands
-from domain.entities.character import Character
 from domain.entities.roll_result import AdvantageType
-from domain.interactors import roll_interactor, character_interactor
-from adapter.presenters.roll_presenter import RollPresenter
+from adapter.presenters import RollPresenter
+from domain.interactors import RollInteractor
 from adapter import config as config
 from domain.interactors.exceptions import NoCharacterError
 
 class TapCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.roll_presenter = RollPresenter()
+        self.roll_interactor = RollInteractor(repository=config.repository)
     
 
     @app_commands.command(
@@ -36,7 +37,7 @@ class TapCommand(commands.Cog):
         try:
             await interaction.response.defer()
 
-            await RollPresenter(interaction).roll(roll_interactor.roll(dice))
+            await self.roll_presenter.roll(interaction, self.roll_interactor.roll(dice))
         except NoCharacterError as e:
             config.logger.error(f"NoCharacterError: {e}", exc_info=True)
             await interaction.followup.send(str(e), ephemeral=True)
@@ -48,13 +49,13 @@ class TapCommand(commands.Cog):
 
     @app_commands.command(name="tap", description="Makes a skill test roll")
     @app_commands.describe(
-        stat="Which skill to use",
+        skill="Which skill to use",
         advantage="Advantage/Disadvantage on skill test",
         plot_die="Whether to use plot dice or not",
         plot_advantage="Advantage/Disadvantage on plot die"
     )
     @app_commands.choices(
-        stat=[
+        skill=[
             app_commands.Choice(name="Athletics", value="athletics"),
             app_commands.Choice(name="Agility", value="agility"),
             app_commands.Choice(name="Heavy Weapons", value="heavy_weapons"),
@@ -75,21 +76,21 @@ class TapCommand(commands.Cog):
             app_commands.Choice(name="Survival", value="survival"),
         ],
         advantage = [
-            app_commands.Choice(name="Advantage", value=roll_interactor.AdvantageType.ADVANTAGE.value),
-            app_commands.Choice(name="Disadvantage", value=roll_interactor.AdvantageType.DISADVANTAGE.value),
+            app_commands.Choice(name="Advantage", value=AdvantageType.ADVANTAGE.value),
+            app_commands.Choice(name="Disadvantage", value=AdvantageType.DISADVANTAGE.value),
         ],
         plot_advantage = [
-            app_commands.Choice(name="Advantage", value=roll_interactor.AdvantageType.ADVANTAGE.value),
-            app_commands.Choice(name="Disadvantage", value=roll_interactor.AdvantageType.DISADVANTAGE.value),
+            app_commands.Choice(name="Advantage", value=AdvantageType.ADVANTAGE.value),
+            app_commands.Choice(name="Disadvantage", value=AdvantageType.DISADVANTAGE.value),
         ]
     )
     async def tap(
         self, 
         interaction: discord.Interaction, 
-        stat: app_commands.Choice[str], 
-        advantage: str = roll_interactor.AdvantageType.NONE.value, 
+        skill: app_commands.Choice[str], 
+        advantage: str = AdvantageType.NONE.value, 
         plot_die: bool = False, 
-        plot_advantage: str = roll_interactor.AdvantageType.NONE.value
+        plot_advantage: str = AdvantageType.NONE.value
     ):
         config.logger.info({
             'event': 'tap',
@@ -104,17 +105,14 @@ class TapCommand(commands.Cog):
         try:
             await interaction.response.defer()
 
-            await RollPresenter(interaction).skill_test(
-                roll_interactor.skill_test(
-                    modifier = character_interactor.get_character(
-                        str(interaction.user.id), 
-                        str(interaction.guild.id)
-                    ).skills.__dict__[stat.value].modifier,
+            await self.roll_presenter.skill_test(
+                self.roll_interactor.skill_test(
+                    skill,
                     advantage = AdvantageType(advantage),
                     plot_die = plot_die,
                     plot_advantage = AdvantageType(plot_advantage)
                 ), 
-                skill = stat.name
+                skill = skill.name
             )
         except NoCharacterError as e:
             config.logger.error(f"NoCharacterError: {e}", exc_info=True)
@@ -142,16 +140,16 @@ class TapCommand(commands.Cog):
             app_commands.Choice(name="Unarmed", value="athletics"),
         ],
         advantage = [
-            app_commands.Choice(name="Advantage", value=roll_interactor.AdvantageType.ADVANTAGE.value),
-            app_commands.Choice(name="Disadvantage", value=roll_interactor.AdvantageType.DISADVANTAGE.value),
+            app_commands.Choice(name="Advantage", value=AdvantageType.ADVANTAGE.value),
+            app_commands.Choice(name="Disadvantage", value=AdvantageType.DISADVANTAGE.value),
         ],
         damage_advantage = [
-            app_commands.Choice(name="Advantage", value=roll_interactor.AdvantageType.ADVANTAGE.value),
-            app_commands.Choice(name="Disadvantage", value=roll_interactor.AdvantageType.DISADVANTAGE.value),
+            app_commands.Choice(name="Advantage", value=AdvantageType.ADVANTAGE.value),
+            app_commands.Choice(name="Disadvantage", value=AdvantageType.DISADVANTAGE.value),
         ],
         plot_advantage = [
-            app_commands.Choice(name="Advantage", value=roll_interactor.AdvantageType.ADVANTAGE.value),
-            app_commands.Choice(name="Disadvantage", value=roll_interactor.AdvantageType.DISADVANTAGE.value),
+            app_commands.Choice(name="Advantage", value=AdvantageType.ADVANTAGE.value),
+            app_commands.Choice(name="Disadvantage", value=AdvantageType.DISADVANTAGE.value),
         ]
     )
     async def attack(
@@ -159,10 +157,10 @@ class TapCommand(commands.Cog):
         interaction: discord.Interaction, 
         damage_dice: str, 
         weapon_type: app_commands.Choice[str],
-        advantage: str = roll_interactor.AdvantageType.NONE.value, 
-        damage_advantage: str =  roll_interactor.AdvantageType.NONE.value,
+        advantage: str = AdvantageType.NONE.value, 
+        damage_advantage: str =  AdvantageType.NONE.value,
         plot_die: bool = False, 
-        plot_advantage: str = roll_interactor.AdvantageType.NONE.value,
+        plot_advantage: str = AdvantageType.NONE.value,
         plot_die_damage: bool = False,
         weapon_name: str = 'Unknown'
     ):
@@ -179,13 +177,10 @@ class TapCommand(commands.Cog):
         try:
             await interaction.response.defer()
 
-            await RollPresenter(interaction).attack(
-                roll_interactor.attack_roll(
+            await self.roll_presenter.attack(
+                self.roll_interactor.attack_roll(
                     damage_expr = damage_dice,
-                    modifier = character_interactor.get_character(
-                        str(interaction.user.id), 
-                        str(interaction.guild.id)
-                    ).skills.__dict__[weapon_type.value].modifier if weapon_type else 0,
+                    skill=weapon_type,
                     advantage = AdvantageType(advantage),
                     damage_advantage = AdvantageType(damage_advantage),
                     plot_die = plot_die,
