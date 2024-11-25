@@ -1,5 +1,5 @@
 from typing import List, Optional
-from domain.entities.character import Character
+from domain.entities import Character
 from adapter.gateways.character_repository.character_repository import CharacterRepository
 
 class CachingCharacterRepository(CharacterRepository):

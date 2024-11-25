@@ -1,6 +1,6 @@
 from typing import List, Optional
 import redis
-from domain.entities.character import Character
+from domain.entities import Character
 from adapter.gateways.character_repository.character_repository import CharacterRepository
 
 class RedisCharacterRepository(CharacterRepository):

@@ -1,25 +1,27 @@
-from domain.entities.character import Character, Resource, ResourceType
-from adapter import config
+from adapter.gateways.character_repository.caching_character_repository import CachingCharacterRepository
+from domain.entities import Character, Resource, ResourceType
 
+class ResourceInteractor:
 
-def set_current_resource(user_id, guild_id, resource: ResourceType, amount: int):
-    character: Character = config.repository.get(user_id, guild_id)
+    def __init__(self, repository: CachingCharacterRepository):
+        self.repository = repository
 
-    resource : Resource = getattr(character.resources, resource.value, Resource())
+    def set_current_resource(self, user_id, guild_id, resource: ResourceType, amount: int) -> Resource:
+        character: Character = self.repository.get(user_id, guild_id)
 
-    resource.current = min(max(amount, 0), resource.max)
+        resource: Resource = character.resources.get_resource_by_type(resource)
+        resource.current = amount
 
-    config.repository.save(user_id, guild_id, character)
+        self.repository.save(user_id, guild_id, character)
 
-    return character
+        return resource
 
-def modify_current_resource(user_id, guild_id, resource: ResourceType, amount: int):
-    character: Character = config.repository.get(user_id, guild_id)
+    def modify_current_resource(self, user_id, guild_id, resource: ResourceType, amount: int) -> Resource:
+        character: Character = self.repository.get(user_id, guild_id)
 
-    resource : Resource = getattr(character.resources, resource.value, Resource())
+        resource: Resource = character.resources.get_resource_by_type(resource)
+        resource.current = resource.current + amount
 
-    resource.current = min(max(resource.current + amount, 0), resource.max)
+        self.repository.save(user_id, guild_id, character)
 
-    config.repository.save(user_id, guild_id, character)
-
-    return character
+        return resource
