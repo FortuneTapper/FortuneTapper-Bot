@@ -3,7 +3,7 @@ from typing import List
 from dataclasses_json import dataclass_json
 from domain.entities.resource import Resources
 from domain.entities.skill import Skills
-from domain.entities.action import Action
+from domain.entities.action import Actions
 
 
 @dataclass_json
@@ -39,6 +39,6 @@ class Character:
     resources: Resources = field(default_factory=Resources)
     skills: Skills = field(default_factory=Skills)
     expertises: List[str] = field(default_factory=list)
-    actions: List[Action] = field(default_factory=list)
+    actions: Actions = field(default_factory=list)
     equipament: List[str] = field(default_factory=list)
     goals: List[str] = field(default_factory=list)

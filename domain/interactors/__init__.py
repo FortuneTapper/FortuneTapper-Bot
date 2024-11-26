@@ -2,3 +2,4 @@ from .character_interactor import CharacterInteractor
 from .roll_interactor import RollInteractor
 from .resource_interactor import ResourceInteractor
 from .exceptions import CharacterImportError, NoCharacterError
+from .action_interactor import ActionInteractor

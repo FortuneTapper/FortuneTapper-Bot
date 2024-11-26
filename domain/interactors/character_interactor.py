@@ -2,7 +2,7 @@ from typing import List
 from lxml import etree
 from playwright.async_api import async_playwright
 from adapter.gateways.character_repository.caching_character_repository import CachingCharacterRepository
-from domain.entities import Character, Attributes, Skills, Skill, Defenses, Resources, Resource, Action, ActionCost, ActionType
+from domain.entities import Character, Attributes, Skills, Skill, Defenses, Resources, Resource, Action, ActionCost, ActionType, Actions
 from domain.interactors import exceptions
 
 
@@ -17,13 +17,20 @@ class CharacterInteractor():
                 browser = await p.chromium.launch(headless=True)
                 page = await browser.new_page()
                 await page.goto(url)
-                await page.wait_for_selector("#character-sheet > div.MuiGrid-root.MuiGrid-container.MuiGrid-item.grid-block.sheet-center-content-container.css-6cg40x > div > div.MuiGrid-root.MuiGrid-container.MuiGrid-item.grid-block.center-section-inner-container.center-section-inner-container--expanded.css-10p3pq5 > div > div.MuiGrid-root.MuiGrid-container.MuiGrid-item.MuiGrid-direction-xs-column.grid-block.cognitive-facet-wrapper.facet-wrapper.css-174hmyf > div.MuiGrid-root.MuiGrid-container.MuiGrid-item.grid-block.raise-the-stakes-wrapper.css-10p3pq5 > div > div > div")
+                await page.wait_for_selector("#\:r9\:")
 
                 html_content = await page.content()
+
+                page.click("#tabs-container > div > div.MuiGrid-root.MuiGrid-container.MuiGrid-item.grid-block.sheet-tab-container.css-10p3pq5 > div.MuiGrid-root.MuiGrid-container.MuiGrid-item.tabs.css-k82uk1 > div > div:nth-child(2) > h3")
+                equipement_content = await page.content()
+
+                page.click("#tabs-container > div > div.MuiGrid-root.MuiGrid-container.MuiGrid-item.grid-block.sheet-tab-container.css-10p3pq5 > div.MuiGrid-root.MuiGrid-container.MuiGrid-item.tabs.css-k82uk1 > div > div:nth-child(3) > h3")
+                details_content = await page.content()
 
                 await browser.close()
             
             tree = etree.HTML(html_content)
+            tree_details = etree.HTML(details_content)
 
             character = Character(
                 character_id= url.split('/')[-1],
@@ -137,16 +144,28 @@ class CharacterInteractor():
                 expertises = tree.xpath("//div[contains(@class, 'expertises-box')]//div[contains(@class, 'text-block__text')]/text()")[0].strip().split(', '),
                 ancestry = tree.xpath("//div[contains(@class, 'header-name-subtitle-ancestry')]/text()")[0].strip(),
                 paths=[],
-                actions = [
-                    Action(
-                            name = action.xpath(".//div[contains(@class, 'stacked-title__title')]/text()")[0].strip(),
-                            description = (' '.join(action.xpath(".//div[contains(@class, 'column--traits')]/text()")[0].strip().replace('\n', '').split())
-                            if action.xpath(".//div[contains(@class, 'column--traits')]/text()") else None),
-                            cost = ActionCost(action.xpath(".//div[contains(@class, 'icon-font')]/div/text()")[0].strip()),
-                            type= ActionType.BASIC
+                actions = Actions(
+                    basic = [
+                        Action(
+                            name=action.xpath(".//div[contains(@class, 'stacked-title__title')]/text()")[0].strip(),
+                            description=(
+                                ' '.join(traits[0].strip().replace('\n', '').split())
+                                if (traits := action.xpath(".//div[contains(@class, 'column--traits')]/text()")) else None
+                            ),
+                            cost=ActionCost(action.xpath(".//div[contains(@class, 'icon-font')]/div/text()")[0].strip()),
+                            type=ActionType.BASIC,
+                            dice=(
+                                dice[0].strip()
+                                if (dice := action.xpath(".//div[contains(@class, 'dice-action-button')]//div[contains(@class, 'simple-action-button-top-label')]/text()")) else None
+                            ),
+                            focus=(
+                                int(focus[0].strip())
+                                if (focus := action.xpath(".//div[contains(@class, 'focus-resource-action-button')]//div[contains(@class, 'simple-action-button-top-label')]/text()")) else 0
+                            )
                         )
-                    for action in tree.xpath("//div[contains(@class, 'sheet-box-component--basic-actions')]//div[contains(@class, 'builder-table-row')]")
-                ],
+                        for action in tree.xpath("//div[contains(@class, 'sheet-box-component--basic-actions')]//div[contains(@class, 'builder-table-row')]")
+                    ]
+                ),
                 equipament=[],
                 goals=[]
             )

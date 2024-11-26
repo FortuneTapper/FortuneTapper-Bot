@@ -1,7 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 class ActionCost(Enum):
     REACTION = "r"
@@ -9,16 +9,21 @@ class ActionCost(Enum):
     ACTION_1 = "1"
     ACTION_2 = "2"
     ACTION_3 = "3"
-    # REACTION = "↶"
-    # FREE = "▷"
-    # ACTION_1 = "▶"
-    # ACTION_2 = "▶▶"
-    # ACTION_3 = "▶▶▶"
 
+    def get_symbol(self):
+        symbols = {
+            "r": "↶",
+            "0": "▷",
+            "1": "▶",
+            "2": "▶▶",
+            "3": "▶▶▶"
+        }
+
+        return symbols[self.value]
 
 class ActionType(Enum):
-    BASIC = "Basic"
-    WEAPON = "Weapon"
+    BASIC = "basic"
+    WEAPON = "weapon"
 
 
 @dataclass_json
@@ -26,7 +31,17 @@ class ActionType(Enum):
 class Action:
     name: str = "Unknown"
     description: str = "Unknown"
-    type: Optional[ActionType] = None
-    cost: Optional[ActionCost] = None
-    focus: int = 0
-    investiture: int = 0
+    type: ActionType = ActionType.BASIC
+    cost: ActionCost = ActionCost.FREE
+    dice: Optional[str] = None
+    focus: Optional[int] = None
+    investiture: Optional[int] = None
+
+@dataclass_json
+@dataclass
+class Actions:
+    basic: List[Action] = field(default_factory=list)
+    weapon: List[Action] = field(default_factory=list)
+    stormlight: List[Action] =field(default_factory=list)
+
+

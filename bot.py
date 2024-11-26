@@ -15,6 +15,7 @@ async def load_extensions():
     await bot.load_extension("adapter.cogs.tap_cog")
     await bot.load_extension("adapter.cogs.character_cog")
     await bot.load_extension("adapter.cogs.resource_cog")
+    await bot.load_extension("adapter.cogs.action_cog")
     pass
 
 async def main():
