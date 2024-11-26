@@ -4,13 +4,14 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from adapter.presenters.character_presenter import CharacterPresenter
-from domain.interactors import character_interactor
+from domain.interactors import CharacterInteractor, NoCharacterError, CharacterImportError
 from adapter import config as config
-from domain.interactors.exceptions import NoCharacterError, CharacterImportError
 
 class Character(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.character_presenter = CharacterPresenter(demiplane_url=config.DEMIPLANE_URL)
+        self.character_interactor = CharacterInteractor(repository=config.repository, demiplane_url=config.DEMIPLANE_URL)
 
 
     @app_commands.command(name="import", description="Imports a character from Demiplane URL")
@@ -28,8 +29,9 @@ class Character(commands.Cog):
         try:
             await interaction.response.defer()
 
-            await CharacterPresenter(interaction).character(
-                await character_interactor.import_character(
+            await self.character_presenter.character(
+                interaction,
+                await self.character_interactor.import_character(
                     url, 
                     str(interaction.user.id), 
                     str(interaction.guild.id)
@@ -62,8 +64,9 @@ class Character(commands.Cog):
         try:
             await interaction.response.defer()
 
-            await CharacterPresenter(interaction).character(
-                await character_interactor.update_character(
+            await self.character_presenter.character(
+                interaction,
+                await self.character_interactor.update_character(
                     str(interaction.user.id), 
                     str(interaction.guild.id)
                 )
@@ -96,8 +99,9 @@ class Character(commands.Cog):
         try:
             await interaction.response.defer()
 
-            await CharacterPresenter(interaction).character(
-                character_interactor.get_character(
+            await self.character_presenter.character(
+                interaction,
+                self.character_interactor.get_character(
                     str(interaction.user.id), 
                     str(interaction.guild.id)
                 )
@@ -130,8 +134,9 @@ class Character(commands.Cog):
         try:
             await interaction.response.defer()
 
-            await CharacterPresenter(interaction).sheet(
-                character_interactor.get_character(
+            await self.character_presenter.sheet(
+                interaction,
+                self.character_interactor.get_character(
                     str(interaction.user.id), 
                     str(interaction.guild.id)
                 )
@@ -164,8 +169,9 @@ class Character(commands.Cog):
         try:
             await interaction.response.defer()
 
-            await CharacterPresenter(interaction).list(
-                character_interactor.get_character_list(
+            await self.character_presenter.list(
+                interaction,
+                self.character_interactor.get_character_list(
                     str(interaction.user.id), 
                     str(interaction.guild.id)
                 )
@@ -197,8 +203,9 @@ class Character(commands.Cog):
         try:
             await interaction.response.defer()
 
-            await CharacterPresenter(interaction).character(
-                character_interactor.select_character(
+            await self.character_presenter.character(
+                interaction,
+                self.character_interactor.select_character(
                     str(interaction.user.id), 
                     str(interaction.guild.id),
                     character_id

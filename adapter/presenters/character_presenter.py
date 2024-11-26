@@ -1,15 +1,13 @@
 from typing import List
 import discord
-from adapter import config
 
-from domain.entities.character import Character
+from domain.entities import Character
 
 class CharacterPresenter:
-    interaction: discord.Interaction
+    _demiplane_url: str
 
-    def __init__(self, interaction: discord.Interaction):
-        self.interaction = interaction
-
+    def __init__(self, demiplane_url: str):
+        self._demiplane_url = demiplane_url
 
     def circle_display(self, current, maximum):
             filled = '●' * int(current)
@@ -39,9 +37,9 @@ class CharacterPresenter:
 
     def display_resources(self, character: Character) -> str:
         return (
-            f"**Health**: {character.resources.health}/{character.resources.health_max}\n"
-            f"**Focus**: {self.circle_display(character.resources.focus, character.resources.focus_max)}\n"
-            f"**Investiture**: {self.circle_display(character.resources.investiture, character.resources.investiture_max)}\n"
+            f"**Health**: {character.resources.health.current}/{character.resources.health.max}\n"
+            f"**Focus**: {self.circle_display(character.resources.focus.current, character.resources.focus.max)}\n"
+            f"**Investiture**: {self.circle_display(character.resources.investiture.current, character.resources.investiture.max)}\n"
             f"**Movement**: {character.resources.movement} ft.\n"
             f"**Recovery Die**: d{character.resources.recovery_die}\n"
             f"**Senses Range**: {character.resources.senses_range} ft."
@@ -73,10 +71,10 @@ class CharacterPresenter:
         ])
 
 
-    async def character(self, character: Character):
+    async def character(self, interaction: discord.Interaction, character: Character):
         embed = discord.Embed(
             title=f"Datos del Personaje: {character.name}",
-            description=f'[Character in Demiplane]({config.DEMIPLANE_URL}{character.character_id})',
+            description=f'[Character in Demiplane]({self._demiplane_url}{character.character_id})',
             color=discord.Color.gold(),
         )
         embed.set_thumbnail(url=character.avatar)
@@ -85,13 +83,13 @@ class CharacterPresenter:
         embed.add_field(name="**Defenses**", value=self.display_defenses(character), inline=False)
         embed.add_field(name="**Resources**", value=self.display_resources(character), inline=False)
 
-        await self.interaction.followup.send(embed=embed)
+        await interaction.followup.send(embed=embed)
 
 
-    async def sheet(self, character: Character):
+    async def sheet(self, interaction: discord.Interaction, character: Character):
         embed = discord.Embed(
             title=f"Datos del Personaje: {character.name}",
-            description=f'[Character in Demiplane]({config.DEMIPLANE_URL}{character.character_id})',
+            description=f'[Character in Demiplane]({self._demiplane_url}{character.character_id})',
 
             color=discord.Color.gold(),
         )
@@ -102,15 +100,15 @@ class CharacterPresenter:
         embed.add_field(name="**Resources**", value=self.display_resources(character), inline=False)
         embed.add_field(name="**Skills**", value=self.display_skills(character), inline=False)
 
-        await self.interaction.followup.send(embed=embed)
+        await interaction.followup.send(embed=embed)
 
 
-    async def list(self, characters: List[Character]):
+    async def list(self, interaction: discord.Interaction, characters: List[Character]):
         embed = discord.Embed(
             title=f"Lista de personajes",
             color=discord.Color.gold(),
         )
         for character in characters:
-            embed.add_field(name=character.name, value=f'{config.DEMIPLANE_URL}{character.character_id}', inline=False)
-        await self.interaction.followup.send(embed=embed, ephemeral=True)
+            embed.add_field(name=character.name, value=f'{self._demiplane_url}{character.character_id}', inline=False)
+        await interaction.followup.send(embed=embed, ephemeral=True)
 

@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch, call
 from sqlalchemy.orm import sessionmaker
 from adapter.gateways.character_repository.sqlalchemy_character_repository import SQLAlchemyCharacterRepository
 from adapter.gateways.character_repository.sqlalchemy_character import SQLAlchemyCharacter
-from domain.entities.character import Character
+from domain.entities import Character
 
 
 class TestSQLAlchemyCharacterRepository(unittest.TestCase):

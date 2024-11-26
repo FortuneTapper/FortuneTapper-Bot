@@ -89,6 +89,14 @@ More detailed info can be found [here](docs/commands.md).
 - **`/attack <damage_dice> [weapon_type] [advantage] [damage_advantage] [plot_die] [plot_advantage] [plot_die_damage] [weapon_name]`**: Rolls for an attack, including damage, advantage, and optional plot dice.  
   Example: `/attack 2d8 Light Weapon Advantage None False None False "Shardblade"`
 
+- **`/health <value>`**: Manages health
+  Example: `/health -2`
+
+- **`/focus <value>`**: Manages focus
+  Example: `/focus 3`
+
+- **`/health <value>`**: Manages investiture
+  Example: `/investiture +1`
 
 
 ## 📚 Contribution

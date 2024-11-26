@@ -120,6 +120,43 @@ This document provides an overview of all available commands in **FortuneTapper-
 
 ---
 
+## Resource commands
+
+### **`/health`**
+- **Description:** Manages Health
+- **Parameters:**
+  - `value` (string): Value to set or modify. Use +X or -X to modify, or X to set.
+- **Example:**
+  ```
+  /health -2
+  ```
+
+---
+
+### **`/focus`**
+- **Description:** Manages Focus
+- **Parameters:**
+  - `value` (string): Value to set or modify. Use +X or -X to modify, or X to set.
+- **Example:**
+  ```
+  /focus 3
+  ```
+
+---
+
+### **`/investiture`**
+- **Description:** Manages Investiture
+- **Parameters:**
+  - `value` (string): Value to set or modify. Use +X or -X to modify, or X to set.
+- **Example:**
+  ```
+  /investiture +1
+  ```
+
+---
+
+
+
 ## 🔧 Notes
 - All commands are slash commands (`/command`) and must be used in Discord chat.
 - Ensure your bot has the required permissions to read and send messages in the channel.

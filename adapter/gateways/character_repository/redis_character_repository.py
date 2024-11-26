@@ -1,6 +1,6 @@
 from typing import List, Optional
 import redis
-from domain.entities.character import Character
+from domain.entities import Character
 from adapter.gateways.character_repository.character_repository import CharacterRepository
 
 class RedisCharacterRepository(CharacterRepository):
@@ -16,7 +16,7 @@ class RedisCharacterRepository(CharacterRepository):
     def get(self, user_id: str, guild_id: str) -> Optional[Character]:
         character_data = self.redis.get(f"character:{user_id}:{guild_id}")
         if character_data:
-            return Character.from_json(character_data) 
+            return Character.from_json(character_data)
         return None
     
     def get_by_id(self, user_id: str, guild_id: str, character_id: str) -> Optional[Character]:

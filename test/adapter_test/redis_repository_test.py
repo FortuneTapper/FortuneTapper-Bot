@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from adapter.gateways.character_repository.redis_character_repository import RedisCharacterRepository
-from domain.entities.character import Character
+from domain.entities import Character
 
 
 class TestRedisCharacterRepository(unittest.TestCase):
