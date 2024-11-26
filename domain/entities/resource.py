@@ -10,7 +10,7 @@ class ResourceType(Enum):
 @dataclass_json
 @dataclass
 class Resource:
-    max: int = 0,
+    max: int = 0
     current: int = 0
 
 
