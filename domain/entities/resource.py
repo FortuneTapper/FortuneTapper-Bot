@@ -10,20 +10,9 @@ class ResourceType(Enum):
 @dataclass_json
 @dataclass
 class Resource:
-    max: int = 0
-    _current: int = field(default=max, init=False)
+    max: int = 0,
+    current: int = 0
 
-    def __init__(self, max: int = 0, current: int = 0):
-        self.max = max
-        self.current = current
-
-    @property
-    def current(self) -> int:
-        return self._current
-    
-    @current.setter
-    def current(self, value: int):
-        self._current = min(max(value, 0), self.max)
 
 @dataclass_json
 @dataclass

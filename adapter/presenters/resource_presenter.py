@@ -1,5 +1,5 @@
 import discord
-from domain.entities import ResourceType
+from domain.entities import Resource, ResourceType
 
 class ResourcePresenter:
 
@@ -8,11 +8,12 @@ class ResourcePresenter:
             empty = '○' * (int(maximum) - int(current))
             return filled + empty
 
-    async def resource(self, interaction: discord.Interaction, resource : ResourceType):
+    async def resource(self, interaction: discord.Interaction, resource : Resource, resource_type : ResourceType):
         embed = discord.Embed(
-            title=f"Modifying {resource.value}",
-            description=self.circle_display(resource.current, resource.max),
+            title=f"Modifying {resource_type.value}",
+            description=f"{resource.current}/{resource.max}",
             color=discord.Color.gold()
         )
+        embed.add_field(name="", value=self.circle_display(resource.current, resource.max))
 
         await interaction.followup.send(embed=embed)

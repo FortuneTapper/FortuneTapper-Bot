@@ -168,6 +168,7 @@ class CharacterInteractor():
         
     def get_character(self, user_id, guild_id) -> Character:
         character = self.repository.get(user_id, guild_id)
+
         if not character:
             raise exceptions.CharacterImportError()
         

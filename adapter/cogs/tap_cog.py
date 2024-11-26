@@ -1,12 +1,10 @@
-from typing import Any
 import discord
 from discord.ext import commands
 from discord import app_commands
-from domain.entities.roll_result import AdvantageType
+from domain.entities import AdvantageType, SkillType
 from adapter.presenters import RollPresenter
-from domain.interactors import RollInteractor
+from domain.interactors import RollInteractor, NoCharacterError
 from adapter import config as config
-from domain.interactors.exceptions import NoCharacterError
 
 class TapCommand(commands.Cog):
     def __init__(self, bot):
@@ -87,7 +85,7 @@ class TapCommand(commands.Cog):
     async def tap(
         self, 
         interaction: discord.Interaction, 
-        skill: app_commands.Choice[str], 
+        skill: str, 
         advantage: str = AdvantageType.NONE.value, 
         plot_die: bool = False, 
         plot_advantage: str = AdvantageType.NONE.value
@@ -106,13 +104,16 @@ class TapCommand(commands.Cog):
             await interaction.response.defer()
 
             await self.roll_presenter.skill_test(
+                interaction,
                 self.roll_interactor.skill_test(
-                    skill,
+                    user_id=str(interaction.user.id),
+                    guild_id=str(interaction.guild.id),
+                    skill=SkillType(skill),
                     advantage = AdvantageType(advantage),
                     plot_die = plot_die,
                     plot_advantage = AdvantageType(plot_advantage)
                 ), 
-                skill = skill.name
+                skill = skill
             )
         except NoCharacterError as e:
             config.logger.error(f"NoCharacterError: {e}", exc_info=True)
@@ -156,7 +157,7 @@ class TapCommand(commands.Cog):
         self, 
         interaction: discord.Interaction, 
         damage_dice: str, 
-        weapon_type: app_commands.Choice[str],
+        weapon_type: str,
         advantage: str = AdvantageType.NONE.value, 
         damage_advantage: str =  AdvantageType.NONE.value,
         plot_die: bool = False, 
@@ -178,9 +179,12 @@ class TapCommand(commands.Cog):
             await interaction.response.defer()
 
             await self.roll_presenter.attack(
+                interaction,
                 self.roll_interactor.attack_roll(
+                    user_id=str(interaction.user.id),
+                    guild_id=str(interaction.guild.id),
                     damage_expr = damage_dice,
-                    skill=weapon_type,
+                    skill=SkillType(weapon_type),
                     advantage = AdvantageType(advantage),
                     damage_advantage = AdvantageType(damage_advantage),
                     plot_die = plot_die,

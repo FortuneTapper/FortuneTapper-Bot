@@ -10,7 +10,7 @@ class ResourceInteractor:
         character: Character = self.repository.get(user_id, guild_id)
 
         resource: Resource = character.resources.get_resource_by_type(resource)
-        resource.current = amount
+        resource.current = min(max(amount, 0), resource.max)
 
         self.repository.save(user_id, guild_id, character)
 
@@ -20,7 +20,7 @@ class ResourceInteractor:
         character: Character = self.repository.get(user_id, guild_id)
 
         resource: Resource = character.resources.get_resource_by_type(resource)
-        resource.current = resource.current + amount
+        resource.current = min(max(resource.current + amount, 0), resource.max)
 
         self.repository.save(user_id, guild_id, character)
 

@@ -30,8 +30,8 @@ class Character(commands.Cog):
             await interaction.response.defer()
 
             await self.character_presenter.character(
+                interaction,
                 await self.character_interactor.import_character(
-                    interaction,
                     url, 
                     str(interaction.user.id), 
                     str(interaction.guild.id)
@@ -65,6 +65,7 @@ class Character(commands.Cog):
             await interaction.response.defer()
 
             await self.character_presenter.character(
+                interaction,
                 await self.character_interactor.update_character(
                     str(interaction.user.id), 
                     str(interaction.guild.id)
@@ -99,6 +100,7 @@ class Character(commands.Cog):
             await interaction.response.defer()
 
             await self.character_presenter.character(
+                interaction,
                 self.character_interactor.get_character(
                     str(interaction.user.id), 
                     str(interaction.guild.id)
@@ -133,6 +135,7 @@ class Character(commands.Cog):
             await interaction.response.defer()
 
             await self.character_presenter.sheet(
+                interaction,
                 self.character_interactor.get_character(
                     str(interaction.user.id), 
                     str(interaction.guild.id)
@@ -167,6 +170,7 @@ class Character(commands.Cog):
             await interaction.response.defer()
 
             await self.character_presenter.list(
+                interaction,
                 self.character_interactor.get_character_list(
                     str(interaction.user.id), 
                     str(interaction.guild.id)
@@ -200,6 +204,7 @@ class Character(commands.Cog):
             await interaction.response.defer()
 
             await self.character_presenter.character(
+                interaction,
                 self.character_interactor.select_character(
                     str(interaction.user.id), 
                     str(interaction.guild.id),
